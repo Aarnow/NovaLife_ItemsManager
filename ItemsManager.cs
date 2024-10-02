@@ -118,7 +118,7 @@ namespace ItemsManager
             //Boutons
             panel.NextButton("Sélectionner", () => panel.SelectTab());
             panel.NextButton("Ajouter", () => ItemsManagerCreatePanel(player));
-            panel.AddButton("Retour", ui => AAMenu.AAMenu.menu.AdminPluginPanel(player, AAMenu.AAMenu.menu.AdminPluginTabLines));
+            panel.AddButton("Retour", ui => AAMenu.AAMenu.menu.AdminPluginPanel(player));
             panel.CloseButton();
 
             //Affichage
