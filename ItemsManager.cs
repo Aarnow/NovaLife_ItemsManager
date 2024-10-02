@@ -1,18 +1,17 @@
 ﻿using ItemsManager.Entities;
 using Life;
 using Life.BizSystem;
-using Life.DB;
 using Life.InventorySystem;
 using Life.Network;
 using Life.UI;
 using ModKit.Helper;
 using ModKit.Interfaces;
+using ModKit.Internal;
 using ModKit.Utils;
-using Socket.Newtonsoft.Json;
-using Socket.WebSocket4Net.System.Linq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using _menu = AAMenu.Menu;
 using mk = ModKit.Helper.TextFormattingHelper;
 
@@ -33,17 +32,27 @@ namespace ItemsManager
             InsertMenu();
             InitItemsManager();
 
-            ModKit.Internal.Logger.LogSuccess($"{PluginInformations.SourceName} v{PluginInformations.Version}", "initialisé");
+            Logger.LogSuccess($"{PluginInformations.SourceName} v{PluginInformations.Version}", "initialisé");
         }
 
         public async void InitItemsManager()
         {
-            //-----
-            List<ItemsManager_Item> itemsManager = await ItemsManager_Item.QueryAll();
-
-            foreach (ItemsManager_Item item in itemsManager)
+            try
             {
-                EditNovaItem(item);
+                await Task.Delay(1000); //wait register itemsManager tables
+                List<ItemsManager_Item> itemsManager = await ItemsManager_Item.QueryAll();
+
+                if(itemsManager != null)
+                {
+                    foreach (ItemsManager_Item item in itemsManager)
+                    {
+                        EditNovaItem(item);
+                    }
+                }
+            }
+            catch(Exception ex)
+            {
+                Logger.LogWarning("InitItemsManager", ex.ToString());
             }
         }
 
@@ -81,7 +90,7 @@ namespace ItemsManager
 
         public void InsertMenu()
         {
-            _menu.AddAdminTabLine(PluginInformations, 5, "ItemsManager", (ui) =>
+            _menu.AddAdminPluginTabLine(PluginInformations, 5, "ItemsManager", (ui) =>
             {
                 Player player = PanelHelper.ReturnPlayerFromPanel(ui);
                 ItemsManagerPanel(player);
@@ -109,10 +118,7 @@ namespace ItemsManager
             //Boutons
             panel.NextButton("Sélectionner", () => panel.SelectTab());
             panel.NextButton("Ajouter", () => ItemsManagerCreatePanel(player));
-            panel.AddButton("Retour", ui =>
-            {
-                AAMenu.AAMenu.menu.AdminPanel(player, AAMenu.AAMenu.menu.AdminTabLines);
-            });
+            panel.AddButton("Retour", ui => AAMenu.AAMenu.menu.AdminPluginPanel(player, AAMenu.AAMenu.menu.AdminPluginTabLines));
             panel.CloseButton();
 
             //Affichage
@@ -201,7 +207,7 @@ namespace ItemsManager
 
         public void ItemsManagerDetailsPanel(Player player, ItemsManager_Item item)
         {
-            //DéclaratioI
+            //Déclaration
             Panel panel = PanelHelper.Create("ItemsManager - Modifier un item", UIPanel.PanelType.TabPrice, player, () => ItemsManagerDetailsPanel(player, item));
 
             //Corps
